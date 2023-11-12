@@ -76,13 +76,6 @@ class TheWorld
 	void doPhysics(RigidBody newRigidBody);
 };
 
-struct TestContraints
-{
-	double ForceX = 0;
-	double ForceY = 0;
-};
-
-TestContraints GetParameters();
 
 void DoPhysicsLol();
 
@@ -92,14 +85,4 @@ int main()
 
 
 	return 0;
-}
-
-TestContraints GetParameters()
-{
-	TestContraints params;
-	Print("input xforce");
-	Gather(params.ForceX);
-	Print("input yforce");
-	Gather(params.ForceY);
-	return params;
 }
