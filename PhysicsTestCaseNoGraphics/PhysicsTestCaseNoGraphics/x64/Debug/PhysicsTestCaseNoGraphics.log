@@ -1,0 +1,4 @@
+﻿  main.cpp
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(59,9): warning C4101: 'xForce': unreferenced local variable
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(60,9): warning C4101: 'yForce': unreferenced local variable
+  PhysicsTestCaseNoGraphics.vcxproj -> C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\x64\Debug\PhysicsTestCaseNoGraphics.exe

@@ -1,87 +1,90 @@
-#include <cmath>
 #include <iostream>
 #include <vector>
 #include <string>
+#include <array>
 #include <time.h>
+#include "Physics.h"
 
 //idk what esle to do here, feels like there should be a better way to apply a system wide number, like in a class somewhere.
 // but I dont feel like I should just pass around the current value of gravity all the time.
-double kGravityForce = 10; // REPLACE
 
 #define Print(str) std::cout << str << std::endl;
-#define Gather(inVar) std::cin >> inVar 
 
-struct Vector2
-{
-	double xComponent = 0;
-	double yComponent = 0;
-	double direction = 0;
-	double magnitude = 0;
+class World {
+	const double m_kWorldGravity = -10;
+	const double m_kWorldLength = 1000;
+	const double m_kWorldHeight = 1000;
+	//static bool m_phyStarted;
 
-	void GetDirection();
-	void GetMagnitude();
-	void GetX();
-	void GetY();
+public:
+	std::vector<PhysicsObject> m_physicsObjects; // make private
 
-	void GetDirection()
-	{
-		direction = std::atan2(xComponent, yComponent);
-	}//get Dir x,y
-
-	void GetMagnitude()
-	{
-		magnitude = std::sqrt((pow(xComponent, 2) + pow(yComponent, 2)));
-	}//get mag
-
-	void GetX() {
-		xComponent = magnitude * std::sin(direction);
-	}//getx
-
-	void GetY() {
-		xComponent = magnitude * std::cos(direction);
-	}//gety
-
-};
-
-struct RigidBody
-{
-
-	Vector2 velocity;
-	int xPos = 0;
-	int yPos = 0;
-	char displayer = '@';
-	double mass = 1;
-	double weight = mass * kGravityForce;
-	double accelleration = 0;
-
-	void AddForce_X(double force);
-	void AddForce_Y(double force);
-
-	void AddForce_X(double force)
-	{
-		velocity.xComponent += force;
+	World() {
+		//m_phyStarted = false;
 	}
+	~World() {}
 
-	void AddForce_Y(double force)
-	{
-		velocity.yComponent += force;
-	}
-
+	void CreatePhysicsObject(double XStart, double Ystart, double mass);
+	void StartPhysics();
+	void StepPhysics();
 };
 
-class TheWorld
+void World::StepPhysics()
 {
-	double ForceOfGravity = 10
+	for (int i = 0; i < m_physicsObjects.size(); ++i)
+	{
+		PhysicsObject& currentObject = m_physicsObjects.at(i);
+		currentObject.AddForce_Y(m_kWorldGravity);
+		if (currentObject.m_location.yPosition < 0)
+			currentObject.SetVelocity(0, 0);
+		currentObject.updateLocationFromForce();
+		currentObject.PrintLocation();
+	}
+}
 
-	void doPhysics(RigidBody newRigidBody);
-};
+//void World::StartPhysics()
+//{
+//	m_phyStarted = true;
+//
+//}
 
-
-void DoPhysicsLol();
+void World::CreatePhysicsObject(double XStart, double Ystart, double mass)
+{
+	PhysicsObject newObject(XStart, Ystart, mass);
+	m_physicsObjects.push_back(newObject);
+}
 
 int main()
 {
-	TestContraints parameters = GetParameters();
+	double xForce;
+	double yForce;
+
+	World myWorld;
+
+	//std::cout << "x force" << std::endl;
+	//std::cin >> xForce;
+	//std::cout << "y force" << std::endl;
+	//std::cin >> yForce;
+
+	myWorld.CreatePhysicsObject(10, 10, 1);
+
+	system("pause");
+
+	
+	bool keepRunning = true;
+	//myWorld.StartPhysics();
+	myWorld.m_physicsObjects.at(0).AddForce_X(50);
+	myWorld.m_physicsObjects.at(0).AddForce_Y(100);
+	//unsigned int currentTime = time(0);
+	int count = 0;
+	while(keepRunning)
+	{
+		myWorld.StepPhysics();
+		++count;
+		if (count >= 30)
+			keepRunning = false;
+	}
+	system("pause");
 
 
 	return 0;
