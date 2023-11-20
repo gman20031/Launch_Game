@@ -1,9 +1,7 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
-#include <string>
-#include <array>
-#include <time.h>
-#include "Physics.h"
+#include "PhysicsObject.h"
 
 //idk what esle to do here, feels like there should be a better way to apply a system wide number, like in a class somewhere.
 // but I dont feel like I should just pass around the current value of gravity all the time.
@@ -14,39 +12,32 @@ class World {
 	const double m_kWorldGravity = -10;
 	const double m_kWorldLength = 1000;
 	const double m_kWorldHeight = 1000;
-	//static bool m_phyStarted;
+	const int m_kStepsPerSecond = 60;
 
 public:
 	std::vector<PhysicsObject> m_physicsObjects; // make private
 
-	World() {
-		//m_phyStarted = false;
-	}
-	~World() {}
-
 	void CreatePhysicsObject(double XStart, double Ystart, double mass);
-	void StartPhysics();
-	void StepPhysics();
+	void AllStepPhysics();
 };
 
-void World::StepPhysics()
+//int World::m_kStepsPerSecond = 10;
+
+void World::AllStepPhysics()
 {
 	for (int i = 0; i < m_physicsObjects.size(); ++i)
 	{
 		PhysicsObject& currentObject = m_physicsObjects.at(i);
-		currentObject.AddForce_Y(m_kWorldGravity);
-		if (currentObject.m_location.yPosition < 0)
+		currentObject.AddForce_Y((currentObject.GetMass() * m_kWorldGravity)/ m_kStepsPerSecond);
+		currentObject.updateLocationFromForce(m_kStepsPerSecond);
+		if (currentObject.GetLocation_Y() < 0)
+		{
 			currentObject.SetVelocity(0, 0);
-		currentObject.updateLocationFromForce();
-		currentObject.PrintLocation();
+			currentObject.SetLocation(currentObject.GetLocation_X(), 0);
+		}
 	}
-}
 
-//void World::StartPhysics()
-//{
-//	m_phyStarted = true;
-//
-//}
+}
 
 void World::CreatePhysicsObject(double XStart, double Ystart, double mass)
 {
@@ -56,36 +47,45 @@ void World::CreatePhysicsObject(double XStart, double Ystart, double mass)
 
 int main()
 {
+	World myWorld;
+	
+	//create test object at 10,10 with mass 1. then fill in forces applied with simple text
+	myWorld.CreatePhysicsObject(10, 10, 1);
 	double xForce;
 	double yForce;
-
-	World myWorld;
-
-	//std::cout << "x force" << std::endl;
-	//std::cin >> xForce;
-	//std::cout << "y force" << std::endl;
-	//std::cin >> yForce;
-
-	myWorld.CreatePhysicsObject(10, 10, 1);
+	int steps;
+	std::cout << "x force" << std::endl;
+	std::cin >> xForce;
+	std::cout << "y force" << std::endl;
+	std::cin >> yForce;
+	std::cout << "steps" << std::endl;
+	std::cin >> steps;
 
 	system("pause");
 
-	
-	bool keepRunning = true;
-	//myWorld.StartPhysics();
-	myWorld.m_physicsObjects.at(0).AddForce_X(50);
-	myWorld.m_physicsObjects.at(0).AddForce_Y(100);
-	//unsigned int currentTime = time(0);
-	int count = 0;
-	while(keepRunning)
+	std::ofstream coordinateFile("coordinates.txt");
+	if (coordinateFile.is_open())
 	{
-		myWorld.StepPhysics();
-		++count;
-		if (count >= 30)
-			keepRunning = false;
-	}
-	system("pause");
+		// give the object its initial kick
+		myWorld.m_physicsObjects.at(0).AddForce_X(xForce);
+		myWorld.m_physicsObjects.at(0).AddForce_Y(yForce);
 
+		
+		double tempX;
+		double tempY;
+		
+		for (int i = 0; i < steps; ++i)
+		{
+			myWorld.AllStepPhysics();
+			tempX = myWorld.m_physicsObjects.at(0).GetLocation_X();
+			tempY = myWorld.m_physicsObjects.at(0).GetLocation_Y();
+			coordinateFile << '(' << tempX << ',' << tempY << ')' << std::endl;
+		}
+
+		
+	}//write coordinates files
+
+	system("pause");
 
 	return 0;
 }
