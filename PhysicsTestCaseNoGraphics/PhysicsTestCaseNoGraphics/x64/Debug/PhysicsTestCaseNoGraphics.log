@@ -1,2 +1,5 @@
-﻿  main.cpp
-  PhysicsTestCaseNoGraphics.vcxproj -> C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\x64\Debug\PhysicsTestCaseNoGraphics.exe
+﻿  PhysicsObject.cpp
+  Vector2.cpp
+  main.cpp
+  Generating Code...
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(36,2): error C2143: syntax error: missing ';' before '}'

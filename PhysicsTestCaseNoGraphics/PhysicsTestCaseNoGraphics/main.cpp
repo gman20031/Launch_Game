@@ -1,10 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <chrono>
 #include "PhysicsObject.h"
-
-//idk what esle to do here, feels like there should be a better way to apply a system wide number, like in a class somewhere.
-// but I dont feel like I should just pass around the current value of gravity all the time.
 
 #define Print(str) std::cout << str << std::endl;
 
@@ -21,8 +19,7 @@ public:
 	void AllStepPhysics();
 };
 
-//int World::m_kStepsPerSecond = 10;
-
+// For every Object in world, steps through and executes physics on it.
 void World::AllStepPhysics()
 {
 	for (int i = 0; i < m_physicsObjects.size(); ++i)
@@ -32,9 +29,10 @@ void World::AllStepPhysics()
 		currentObject.updateLocationFromForce(m_kStepsPerSecond);
 		if (currentObject.GetLocation_Y() < 0)
 		{
+			currentObject.SetLocation(currentObject.GetLastLocation_X(), 0);
 			currentObject.SetVelocity(0, 0);
-			currentObject.SetLocation(currentObject.GetLocation_X(), 0);
 		}
+		currentObject.SetLastLocation(currentObject.GetLocation_X(), currentObject.GetLocation_Y());
 	}
 
 }

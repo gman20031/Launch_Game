@@ -5,6 +5,7 @@
 PhysicsObject::PhysicsObject(double XStart, double Ystart, double mass) {
 	m_location.xPosition = XStart;
 	m_location.yPosition = Ystart;
+	m_lastLocation = m_location;
 	m_mass = mass;
 }
 
@@ -18,8 +19,8 @@ void PhysicsObject::DebugLocationPrint()
 {
 	std::cout << "(" << m_location.xPosition << "," << m_location.yPosition << ")\n";
 }
-// updates the position of the object based on the current velocity vector 
-void PhysicsObject::updateLocationFromForce(const int &stepsPerSecond)
+// updates the position of the object based on the current velocity vector - divided by number of steps per second.
+void PhysicsObject::updateLocationFromForce(const int stepsPerSecond)
 {
 	m_location.xPosition += (m_velocity.GetX() / stepsPerSecond);
 	m_location.yPosition += (m_velocity.GetY() / stepsPerSecond);
@@ -40,6 +41,23 @@ double PhysicsObject::GetLocation_Y()
 {
 	return m_location.yPosition;
 }
+// set the location of the object at the last step to specified location
+void PhysicsObject::SetLastLocation(double XVal, double YVal)
+{
+	m_lastLocation.xPosition = XVal;
+	m_lastLocation.yPosition = YVal;
+}
+// returns last step X location of object
+double PhysicsObject::GetLastLocation_X()
+{
+	return m_lastLocation.xPosition;
+}
+// returns last step Y location of object
+double PhysicsObject::GetLastLocation_Y()
+{
+	return m_lastLocation.yPosition;
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
