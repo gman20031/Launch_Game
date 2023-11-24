@@ -64,4 +64,5 @@ public:
 	void SetVelocity(double XVal, double YVal);
 	void AddForce_X(double force);
 	void AddForce_Y(double force);
+	Vector2* GetVelocityPointer();
 };

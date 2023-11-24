@@ -1,5 +1,7 @@
-﻿  PhysicsObject.cpp
-  Vector2.cpp
-  main.cpp
-  Generating Code...
-C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(36,2): error C2143: syntax error: missing ';' before '}'
+﻿  main.cpp
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(100,26): warning C4244: 'initializing': conversion from '_Rep' to 'long', possible loss of data
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(100,26): warning C4244:         with
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(100,26): warning C4244:         [
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(100,26): warning C4244:             _Rep=double
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(100,26): warning C4244:         ]
+  PhysicsTestCaseNoGraphics.vcxproj -> C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\x64\Debug\PhysicsTestCaseNoGraphics.exe
