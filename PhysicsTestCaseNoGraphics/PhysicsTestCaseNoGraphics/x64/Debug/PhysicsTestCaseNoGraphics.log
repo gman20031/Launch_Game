@@ -1,7 +1,8 @@
 ﻿  main.cpp
-C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(100,26): warning C4244: 'initializing': conversion from '_Rep' to 'long', possible loss of data
-C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(100,26): warning C4244:         with
-C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(100,26): warning C4244:         [
-C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(100,26): warning C4244:             _Rep=double
-C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(100,26): warning C4244:         ]
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(200,31): warning C4244: 'initializing': conversion from '_Rep' to '__int64', possible loss of data
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(200,31): warning C4244:         with
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(200,31): warning C4244:         [
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(200,31): warning C4244:             _Rep=double
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(200,31): warning C4244:         ]
+C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\PhysicsTestCaseNoGraphics\main.cpp(243,6): warning C4101: 'seconds': unreferenced local variable
   PhysicsTestCaseNoGraphics.vcxproj -> C:\Users\gangs\Desktop\Work\Personal Projects\Launch Game\PhysicsTestCaseNoGraphics\x64\Debug\PhysicsTestCaseNoGraphics.exe

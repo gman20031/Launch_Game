@@ -5,28 +5,42 @@
 #include <math.h>
 #include <ratio>
 #include <thread>
+
 #include "PhysicsObject.h"
+
 
 #define Print(str) std::cout << str << std::endl;
 
 class World {
 	const int kMircosecondsPerSecond = 100000;
-	const double m_kWorldGravity = -10;
-	const double m_kWorldLength = 1000;
-	const double m_kWorldHeight = 1000;
 	const int m_kStepsPerSecond = 60;
 	const int m_kMicrosecondsPerStep = kMircosecondsPerSecond / m_kStepsPerSecond;
+	static constexpr double m_kPi = 3.14159265359;
+	const double m_kNeintyDegree = m_kPi / 2;
+
+	const double m_kWorldGravity		= -.10;
+	const double m_kWorldFriciton		= .9;
+	const double m_kWorldCutOffThreshold= .05;
+	const double m_kWorldLength			= 1000;
+	const double m_kWorldHeight			= 1000;
 
 	bool m_physicsStarted = false;
 
 	void AllStepPhysics();
+	void CheckIfOutOfWorld(PhysicsObject& currentObject);
+	void HandleOutOfWorld(PhysicsObject& currentObject);
 	void HandleBelowWorld(PhysicsObject& currentObject);
+	void RollObject(PhysicsObject& currentObject);
+	double GetNearestGoodX(PhysicsObject& currentObject);
+	double GetNearestGoodY(PhysicsObject& currentObject);
 
 public:
-	std::vector<PhysicsObject> m_physicsObjects; // make private
+	World() {};
+
+	std::vector<PhysicsObject> m_physicsObjects; // make private?
 
 	void CreatePhysicsObject(double XStart, double Ystart, double mass);
-	void RunPhysics(int durationSeconds);
+	void RunPhysics();
 
 	int getMicrosecondsPerStep()
 	{
@@ -40,27 +54,117 @@ void World::AllStepPhysics()
 	for (int i = 0; i < m_physicsObjects.size(); ++i)
 	{
 		PhysicsObject& currentObject = m_physicsObjects.at(i);
-		currentObject.AddForce_Y((currentObject.GetMass() * m_kWorldGravity)/ m_kStepsPerSecond);
-		currentObject.updateLocationFromForce(m_kStepsPerSecond);
-		if (currentObject.GetLocation_Y() < 0)
-			HandleBelowWorld(currentObject);
-
 		currentObject.SetLastLocation(currentObject.GetLocation_X(), currentObject.GetLocation_Y());
+		currentObject.AddForce_Y(currentObject.GetMass() * m_kWorldGravity);
+		currentObject.updateLocationFromForce(m_kStepsPerSecond);
+		CheckIfOutOfWorld(currentObject);
 	}
 
 }
 
+void World::CheckIfOutOfWorld(PhysicsObject& currentObject)
+{
+	if (currentObject.GetLocation_X() < 0 or currentObject.GetLocation_X() > m_kWorldLength
+	or currentObject.GetLocation_Y() < 0 or currentObject.GetLocation_Y() > m_kWorldHeight)
+	{
+		if (currentObject.GetVelocityPointer()->GetY() == m_kWorldGravity)
+			RollObject(currentObject);
+		else
+			HandleBelowWorld(currentObject);
+	}
+	
+}
+
+void World::HandleOutOfWorld(PhysicsObject& currentObject)
+{
+	//set to correct location
+	double good_X = currentObject.GetLocation_X();
+	double good_Y = currentObject.GetLocation_Y();
+	if (currentObject.GetLocation_X() < 0 or currentObject.GetLocation_X() > m_kWorldLength)
+		good_X = GetNearestGoodX(currentObject);
+
+	if (currentObject.GetLocation_Y() < 0 or currentObject.GetLocation_Y() > m_kWorldHeight)
+		good_Y = GetNearestGoodY(currentObject);
+
+	// if collding with bottom
+	// Theta = pi -( pi - curVectorAngle) - neintyDegrees
+	// new direction = neintyDegree - theta
+
+	// if collding with Top
+	// Theta = pi -( pi - curVectorAngle ) - neintyDegrees
+	// new direction = neintyDegree + theta
+
+	// if collding with Right
+	// Theta = neintyDegrees - (pi -( pi - curVectorAngle ) - neintyDegrees)
+	// newDIrection = 2pi - theta
+
+	// if colliding with left
+	// Theta = neintyDegrees - (pi -( pi - curVectorAngle ) - neintyDegrees)
+	// new DIrection = theta
+
+
+	//uzkad
+	/*
+	I don't know how your backend works but the crossproduct of two vectors is always normal to the surface
+	That's the usual math way of doing it
+	From there I believe you can use the dot product to make angle calculations easier
+	*/
+
+
+	//set to correct vector followup
+
+	currentObject.SetLocation(good_X, good_Y);
+}
+
+double World::GetNearestGoodX(PhysicsObject& currentObject)
+{
+	// y = mx+b
+	// => 0 = (Y Velocity / X Velocity)(x) + Starting Y
+	// => x = -Starting Y / ( (Y Velocity / X Velocity) )
+	Vector2* pVelocity = currentObject.GetVelocityPointer();
+	double  newXPosition = (-currentObject.GetLastLocation_Y()) / (pVelocity->GetY() / pVelocity->GetX());
+	newXPosition += currentObject.GetLastLocation_X(); // shift over to the correct area since i didnt calculate for B in y=mx+b
+	return newXPosition;
+}
+
+double World::GetNearestGoodY(PhysicsObject& currentObject)
+{
+	// y = mx+b
+	// => starting Y = (Y Velocity / X Velocity)(starting X) + b
+	// => b = -(Y Velocity / X Velocity)(starting X) + starting Y
+	Vector2* pVelocity = currentObject.GetVelocityPointer();
+	double newYPosition = (-(pVelocity->GetY() / pVelocity->GetX()) * currentObject.GetLastLocation_X()) + currentObject.GetLastLocation_Y();
+	newYPosition += currentObject.GetLastLocation_Y();
+
+	return newYPosition;
+}
+
 void World::HandleBelowWorld(PhysicsObject& currentObject)
 {
-	// 0 = (Y Velocity / X Velocity)(x) + Starting Y
-	// => -Starting Y / ( (Y Velocity / X Velocity) ) = x
-
-	Vector2* velocityPointer = currentObject.GetVelocityPointer();
-	double  newXPosition = (-currentObject.GetLastLocation_Y()) / (velocityPointer->GetY() / velocityPointer->GetX());
-	newXPosition += currentObject.GetLastLocation_X(); // shift over to the correct area
+	Vector2* pVelocity = currentObject.GetVelocityPointer();
+	double newXPosition = GetNearestGoodX(currentObject);
 
 	currentObject.SetLocation(newXPosition, 0);
-	currentObject.SetVelocity(0, 0);
+
+	double newVelocity_X = (currentObject.GetBouncyness() * pVelocity->GetX());
+	double newVelocity_Y = (currentObject.GetBouncyness() * -pVelocity->GetY());
+	if (newVelocity_Y < 3)
+		newVelocity_Y = 0;
+	if (newVelocity_X < .5)
+		newVelocity_X = 0;
+	currentObject.SetVelocity(newVelocity_X, newVelocity_Y);
+
+	
+}
+
+void World::RollObject(PhysicsObject& currentObject)
+{
+	Vector2* pVelocity = currentObject.GetVelocityPointer();
+	currentObject.SetLocation(currentObject.GetLocation_X(), 0);
+	double newVelocity_X = (m_kWorldFriciton * pVelocity->GetX());
+	if (newVelocity_X < .5)
+		newVelocity_X = 0;
+	currentObject.SetVelocity(newVelocity_X, 0);
 }
 
 void World::CreatePhysicsObject(double XStart, double Ystart, double mass)
@@ -69,7 +173,7 @@ void World::CreatePhysicsObject(double XStart, double Ystart, double mass)
 	m_physicsObjects.push_back(newObject);
 }
 
-void World::RunPhysics(int durationSeconds)
+void World::RunPhysics()
 {
 	if (m_physicsStarted)
 	{
@@ -77,9 +181,6 @@ void World::RunPhysics(int durationSeconds)
 		// I should throw here, not just run an error message
 		return;
 	}
-	m_physicsStarted = true;
-	if (durationSeconds == 0)
-		durationSeconds = 1;
 
 	// this is the point where I start threading
 	std::ofstream coordinateFile("coordinates.txt");
@@ -87,13 +188,12 @@ void World::RunPhysics(int durationSeconds)
 	{
 		double tempX;
 		double tempY;
-		long totalMircoseconds = durationSeconds * kMircosecondsPerSecond;
 		int linecount = 0;
 
 		std::chrono::duration<double, std::micro> deltaMicroseconds;
 		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
 		Print(" Going into infinite loop")
-		while (true)
+		for(;;)
 		{
 			
 			deltaMicroseconds = std::chrono::steady_clock::now() - startTime;
@@ -113,13 +213,14 @@ void World::RunPhysics(int durationSeconds)
 				AllStepPhysics();
 				tempX = m_physicsObjects.at(0).GetLocation_X();
 				tempY = m_physicsObjects.at(0).GetLocation_Y();
-				coordinateFile << '(' << tempX << ',' << tempY << ')' << std::endl;
-			}
 
-			if (deltaMicroseconds.count() >= totalMircoseconds)
-			{
-				Print(linecount << "Lines");
-				break;
+
+				if (m_physicsObjects.at(0).GetVelocityPointer()->GetMagnitude() == 0)
+				{
+					break;
+				}
+
+				coordinateFile << '(' << tempX << ',' << tempY << ')' << std::endl;
 			}
 
 		}
@@ -144,8 +245,6 @@ int main()
 	std::cin >> xForce;
 	std::cout << "y force" << std::endl;
 	std::cin >> yForce;
-	std::cout << "seconds" << std::endl;
-	std::cin >> seconds;
 
 	// give the object its initial kick
 	myWorld.m_physicsObjects.at(0).AddForce_X(xForce);
@@ -157,7 +256,7 @@ int main()
 	system("pause");
 
 	//try the following, dont natty run.
-	myWorld.RunPhysics(seconds);
+	myWorld.RunPhysics();
 
 	system("pause");
 

@@ -40,9 +40,11 @@ class PhysicsObject
 {
 	location2 m_location;
 	location2 m_lastLocation;
-	char m_displayer = 'x'; // For in console graphical display
-	double m_mass = 1; // incase I want to expand to having weight, currently just modifies how fast it falls.
 	Vector2 m_velocity;
+
+	double m_mass = 1; // incase I want to expand to having weight, currently just a % modifier to how fast object falls.
+	double m_massInverse = 1 / m_mass;
+	double m_bouncyness = 0.80;
 
 public:
 	PhysicsObject(double XStart, double Ystart, double mass);
@@ -50,9 +52,10 @@ public:
 	void DebugLocationPrint();
 	void updateLocationFromForce(const int stepsPerSecond);
 
-	void ChangeDisplayer(char newDisplayer);
-
+	void SetMass(double newMass);
 	double GetMass();
+	double GetMassInverse();
+	double GetBouncyness();
 
 	void SetLocation(double XVal, double YVal);
 	double GetLocation_X();
