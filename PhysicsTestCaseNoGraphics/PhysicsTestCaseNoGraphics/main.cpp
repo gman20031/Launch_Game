@@ -16,20 +16,29 @@ class World {
 	const int m_kStepsPerSecond = 60;
 	const int m_kMicrosecondsPerStep = kMircosecondsPerSecond / m_kStepsPerSecond;
 	static constexpr double m_kPi = 3.14159265359;
-	const double m_kNeintyDegree = m_kPi / 2;
+	static constexpr double m_kNeintyDegree = m_kPi / 2;
 
+	enum WorldBorder {
+		top,
+		bottom,
+		right,
+		left,
+		good
+	};
 	const double m_kWorldGravity		= -.10;
 	const double m_kWorldFriciton		= .9;
 	const double m_kWorldCutOffThreshold= .05;
-	const double m_kWorldLength			= 1000;
-	const double m_kWorldHeight			= 1000;
+	const double m_kWorldLength			= 30;
+	const double m_kWorldHeight			= 25;
+	const double m_kRollCutoff			= .5;
+	const double m_kBounceCutoff		= 3;
 
 	bool m_physicsStarted = false;
 
 	void AllStepPhysics();
 	void CheckIfOutOfWorld(PhysicsObject& currentObject);
-	void HandleOutOfWorld(PhysicsObject& currentObject);
-	void HandleBelowWorld(PhysicsObject& currentObject);
+	void HandleOutOfWorld(PhysicsObject& currentObject, int bounceWall);
+	void BounceObject(PhysicsObject& currentObject, int wallBounce);
 	void RollObject(PhysicsObject& currentObject);
 	double GetNearestGoodX(PhysicsObject& currentObject);
 	double GetNearestGoodY(PhysicsObject& currentObject);
@@ -64,44 +73,113 @@ void World::AllStepPhysics()
 
 void World::CheckIfOutOfWorld(PhysicsObject& currentObject)
 {
-	if (currentObject.GetLocation_X() < 0 or currentObject.GetLocation_X() > m_kWorldLength
-	or currentObject.GetLocation_Y() < 0 or currentObject.GetLocation_Y() > m_kWorldHeight)
+	int outOfBoundValue = WorldBorder::good;
+
+	if (currentObject.GetLocation_X() < 0)
 	{
-		if (currentObject.GetVelocityPointer()->GetY() == m_kWorldGravity)
+		outOfBoundValue = WorldBorder::left;
+	}
+	if (currentObject.GetLocation_X() > m_kWorldLength)
+	{
+		outOfBoundValue = WorldBorder::right;
+	}
+	if (currentObject.GetLocation_Y() < 0)
+	{
+		outOfBoundValue = WorldBorder::bottom;
+	}
+	if (currentObject.GetLocation_Y() > m_kWorldHeight)
+	{
+		outOfBoundValue = WorldBorder::top;
+	}
+
+	if(outOfBoundValue != WorldBorder::good)
+	{
+		if (currentObject.GetVelocityPointer()->GetY() == m_kWorldGravity
+			and outOfBoundValue == WorldBorder::bottom)
 			RollObject(currentObject);
 		else
-			HandleBelowWorld(currentObject);
+			HandleOutOfWorld(currentObject, outOfBoundValue);
 	}
-	
 }
 
-void World::HandleOutOfWorld(PhysicsObject& currentObject)
+void World::HandleOutOfWorld(PhysicsObject& currentObject, int bounceWall)
 {
 	//set to correct location
 	double good_X = currentObject.GetLocation_X();
 	double good_Y = currentObject.GetLocation_Y();
-	if (currentObject.GetLocation_X() < 0 or currentObject.GetLocation_X() > m_kWorldLength)
+	switch (bounceWall)
+	{
+	case WorldBorder::bottom:
+	{
+		good_Y = 0;
 		good_X = GetNearestGoodX(currentObject);
-
-	if (currentObject.GetLocation_Y() < 0 or currentObject.GetLocation_Y() > m_kWorldHeight)
+		break;
+	}
+	case WorldBorder::top:
+	{
+		good_Y = m_kWorldHeight;
+		good_X = GetNearestGoodX(currentObject);
+		break;
+	}
+	case WorldBorder::right:
+	{
 		good_Y = GetNearestGoodY(currentObject);
+		good_X = m_kWorldLength;
+		break;
+	}
+	case WorldBorder::left:
+		good_Y = GetNearestGoodY(currentObject);
+		good_X = 0;
+		break;
+	}
 
-	// if collding with bottom
-	// Theta = pi -( pi - curVectorAngle) - neintyDegrees
-	// new direction = neintyDegree - theta
+	//set to correct vector followup
+	double theta;
+	double currentDirection = currentObject.GetVelocityPointer()->GetDirection();
 
-	// if collding with Top
-	// Theta = pi -( pi - curVectorAngle ) - neintyDegrees
-	// new direction = neintyDegree + theta
+	double newDirection = currentDirection;
 
-	// if collding with Right
-	// Theta = neintyDegrees - (pi -( pi - curVectorAngle ) - neintyDegrees)
-	// newDIrection = 2pi - theta
-
-	// if colliding with left
-	// Theta = neintyDegrees - (pi -( pi - curVectorAngle ) - neintyDegrees)
-	// new DIrection = theta
-
+	switch (bounceWall)
+	{
+		case WorldBorder::bottom:
+		{
+			// Theta = 180 degrees - (the supplementary angle to my angle) - right angle
+			// new direction = neintyDegree - theta
+			theta = (m_kPi - (m_kPi - currentDirection) - m_kNeintyDegree);
+			newDirection = m_kNeintyDegree - theta;
+			break;
+		}
+		case WorldBorder::top:
+		{
+			// Theta = 180 degrees - (the supplementary angle to my angle) - right angle
+			// new direction = neintyDegree + theta
+			theta = (m_kPi - (m_kPi - currentDirection) - m_kNeintyDegree);
+			newDirection = m_kNeintyDegree + theta;
+			break;
+		}
+		case WorldBorder::right:
+		{
+			// Theta = 180 degrees - my angle - right angle
+			// newDIrection = 2pi - theta
+			theta = (m_kPi - currentDirection - m_kNeintyDegree);
+			newDirection = (2 * m_kPi) - (m_kNeintyDegree - theta);
+			break;
+		}
+		case WorldBorder::left:
+		{
+			// Theta = 180 degrees - my angle - right angle
+			// new Direction = theta
+			theta = (m_kPi - (m_kPi - abs(currentDirection)) - m_kNeintyDegree);
+			newDirection = theta;
+			break;
+		}	
+	}
+	Vector2* pVelocity = currentObject.GetVelocityPointer();
+	pVelocity->SetDirection(newDirection);
+	pVelocity->SetMagnitude(pVelocity->GetMagnitude() * currentObject.GetBouncyness());
+	if (pVelocity->GetY() < m_kBounceCutoff)
+		pVelocity->SetY(0);
+	currentObject.SetLocation(good_X, good_Y);
 
 	//uzkad
 	/*
@@ -109,11 +187,6 @@ void World::HandleOutOfWorld(PhysicsObject& currentObject)
 	That's the usual math way of doing it
 	From there I believe you can use the dot product to make angle calculations easier
 	*/
-
-
-	//set to correct vector followup
-
-	currentObject.SetLocation(good_X, good_Y);
 }
 
 double World::GetNearestGoodX(PhysicsObject& currentObject)
@@ -133,13 +206,16 @@ double World::GetNearestGoodY(PhysicsObject& currentObject)
 	// => starting Y = (Y Velocity / X Velocity)(starting X) + b
 	// => b = -(Y Velocity / X Velocity)(starting X) + starting Y
 	Vector2* pVelocity = currentObject.GetVelocityPointer();
-	double newYPosition = (-(pVelocity->GetY() / pVelocity->GetX()) * currentObject.GetLastLocation_X()) + currentObject.GetLastLocation_Y();
-	newYPosition += currentObject.GetLastLocation_Y();
+	double currentXVelocity = pVelocity->GetX();
+	double x1 = currentObject.GetLastLocation_X();
+	if (currentObject.GetLocation_X() > m_kWorldLength)
+		x1 -= m_kWorldLength;
+	double newYPosition = (-(pVelocity->GetY() / (pVelocity->GetX())) * x1) + currentObject.GetLastLocation_Y();
 
 	return newYPosition;
 }
 
-void World::HandleBelowWorld(PhysicsObject& currentObject)
+void World::BounceObject(PhysicsObject& currentObject , int bounceWall)
 {
 	Vector2* pVelocity = currentObject.GetVelocityPointer();
 	double newXPosition = GetNearestGoodX(currentObject);
@@ -162,7 +238,7 @@ void World::RollObject(PhysicsObject& currentObject)
 	Vector2* pVelocity = currentObject.GetVelocityPointer();
 	currentObject.SetLocation(currentObject.GetLocation_X(), 0);
 	double newVelocity_X = (m_kWorldFriciton * pVelocity->GetX());
-	if (newVelocity_X < .5)
+	if (newVelocity_X < m_kRollCutoff)
 		newVelocity_X = 0;
 	currentObject.SetVelocity(newVelocity_X, 0);
 }

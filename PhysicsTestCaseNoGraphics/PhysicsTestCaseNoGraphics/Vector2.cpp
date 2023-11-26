@@ -39,7 +39,7 @@ void Vector2::SetXFromMagDir() {
 }
 // Set Y using Magnitude and direction
 void Vector2::SetYFromMagDir() {
-	m_xComponent = m_magnitude * std::cos(m_direction);
+	m_yComponent = m_magnitude * std::cos(m_direction);
 }
 
 ////////////////////////////////////////////
