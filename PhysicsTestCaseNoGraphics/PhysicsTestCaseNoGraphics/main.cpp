@@ -18,7 +18,7 @@ class World {
 	static constexpr double m_kPi = 3.14159265359;
 	static constexpr double m_kNeintyDegree = m_kPi / 2;
 
-	enum WorldBorder {
+	enum class WorldBorder {
 		top,
 		bottom,
 		right,
