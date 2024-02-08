@@ -1,7 +1,7 @@
 #include "PhysicsObject.h"
 #include <iostream>
 
-//Constructor contrutor for the object
+//Constructor for the object
 PhysicsObject::PhysicsObject(double XStart, double Ystart, double mass) {
 	m_location.xPosition = XStart;
 	m_location.yPosition = Ystart;

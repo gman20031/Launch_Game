@@ -42,7 +42,7 @@ class PhysicsObject
 	location2 m_lastLocation;
 	Vector2 m_velocity;
 
-	double m_mass = 1; // incase I want to expand to having weight, currently just a % modifier to how fast object falls.
+	double m_mass = 1; // currently % modifier to how fast object falls.
 	double m_massInverse = 1 / m_mass;
 	double m_bouncyness = 0.80;
 
@@ -69,3 +69,4 @@ public:
 	void AddForce_Y(double force);
 	Vector2* GetVelocityPointer();
 };
+

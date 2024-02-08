@@ -18,6 +18,13 @@ class World {
 	static constexpr double m_kPi = 3.14159265359;
 	static constexpr double m_kNeintyDegree = m_kPi / 2;
 
+	const double m_kWorldGravity		= -.10;
+	const double m_kWorldFriciton		= .9;
+	const double m_kWorldLength			= 30;
+	const double m_kWorldHeight			= 25;
+	const double m_kRollCutoff			= .5;
+	const double m_kBounceCutoff		= 3;
+
 	enum class WorldBorder {
 		top,
 		bottom,
@@ -25,20 +32,13 @@ class World {
 		left,
 		good
 	};
-	const double m_kWorldGravity		= -.10;
-	const double m_kWorldFriciton		= .9;
-	const double m_kWorldCutOffThreshold= .05;
-	const double m_kWorldLength			= 30;
-	const double m_kWorldHeight			= 25;
-	const double m_kRollCutoff			= .5;
-	const double m_kBounceCutoff		= 3;
 
 	bool m_physicsStarted = false;
 
 	void AllStepPhysics();
 	void CheckIfOutOfWorld(PhysicsObject& currentObject);
-	void HandleOutOfWorld(PhysicsObject& currentObject, int bounceWall);
-	void BounceObject(PhysicsObject& currentObject, int wallBounce);
+	void HandleOutOfWorld(PhysicsObject& currentObject, WorldBorder bounceWall);
+	void BounceObject(PhysicsObject& currentObject);
 	void RollObject(PhysicsObject& currentObject);
 	double GetNearestGoodX(PhysicsObject& currentObject);
 	double GetNearestGoodY(PhysicsObject& currentObject);
@@ -73,7 +73,7 @@ void World::AllStepPhysics()
 
 void World::CheckIfOutOfWorld(PhysicsObject& currentObject)
 {
-	int outOfBoundValue = WorldBorder::good;
+	WorldBorder outOfBoundValue = WorldBorder::good;
 
 	if (currentObject.GetLocation_X() < 0)
 	{
@@ -102,7 +102,7 @@ void World::CheckIfOutOfWorld(PhysicsObject& currentObject)
 	}
 }
 
-void World::HandleOutOfWorld(PhysicsObject& currentObject, int bounceWall)
+void World::HandleOutOfWorld(PhysicsObject& currentObject, WorldBorder bounceWall)
 {
 	//set to correct location
 	double good_X = currentObject.GetLocation_X();
@@ -168,9 +168,9 @@ void World::HandleOutOfWorld(PhysicsObject& currentObject, int bounceWall)
 		case WorldBorder::left:
 		{
 			// Theta = 180 degrees - my angle - right angle
-			// new Direction = theta
+			// new Direction = neintyDegree - theta
 			theta = (m_kPi - (m_kPi - abs(currentDirection)) - m_kNeintyDegree);
-			newDirection = theta;
+			newDirection = m_kNeintyDegree - theta;
 			break;
 		}	
 	}
@@ -196,7 +196,7 @@ double World::GetNearestGoodX(PhysicsObject& currentObject)
 	// => x = -Starting Y / ( (Y Velocity / X Velocity) )
 	Vector2* pVelocity = currentObject.GetVelocityPointer();
 	double  newXPosition = (-currentObject.GetLastLocation_Y()) / (pVelocity->GetY() / pVelocity->GetX());
-	newXPosition += currentObject.GetLastLocation_X(); // shift over to the correct area since i didnt calculate for B in y=mx+b
+	newXPosition += currentObject.GetLastLocation_X(); // shift over to the correct area
 	return newXPosition;
 }
 
@@ -215,7 +215,7 @@ double World::GetNearestGoodY(PhysicsObject& currentObject)
 	return newYPosition;
 }
 
-void World::BounceObject(PhysicsObject& currentObject , int bounceWall)
+void World::BounceObject(PhysicsObject& currentObject)
 {
 	Vector2* pVelocity = currentObject.GetVelocityPointer();
 	double newXPosition = GetNearestGoodX(currentObject);
@@ -257,39 +257,31 @@ void World::RunPhysics()
 		// I should throw here, not just run an error message
 		return;
 	}
-
-	// this is the point where I start threading
 	std::ofstream coordinateFile("coordinates.txt");
 	if (coordinateFile.is_open())
 	{
 		double tempX;
 		double tempY;
-		int linecount = 0;
 
 		std::chrono::duration<double, std::micro> deltaMicroseconds;
 		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
 		Print(" Going into infinite loop")
 		for(;;)
 		{
-			
 			deltaMicroseconds = std::chrono::steady_clock::now() - startTime;
 			long long MicroSecondCount = deltaMicroseconds.count();
 
 			if (deltaMicroseconds.count() < 0)
 			{
-				//this should never happen, so throw here too
 				m_physicsStarted = false;
 				return;
 			}
 
 			if (MicroSecondCount % getMicrosecondsPerStep() == 0)
 			{
-				++linecount;
-				//std::cout << MicroSecondCount << std::endl;
 				AllStepPhysics();
 				tempX = m_physicsObjects.at(0).GetLocation_X();
 				tempY = m_physicsObjects.at(0).GetLocation_Y();
-
 
 				if (m_physicsObjects.at(0).GetVelocityPointer()->GetMagnitude() == 0)
 				{
@@ -310,13 +302,13 @@ void World::RunPhysics()
 
 int main()
 {
+	double xForce;
+	double yForce;
 	World myWorld;
 
 	//create test object at 10,10 with mass 1. then fill in forces applied with simple text
 	myWorld.CreatePhysicsObject(10, 10, 1);
-	double xForce;
-	double yForce;
-	int seconds;
+	
 	std::cout << "x force" << std::endl;
 	std::cin >> xForce;
 	std::cout << "y force" << std::endl;
@@ -327,11 +319,8 @@ int main()
 	myWorld.m_physicsObjects.at(0).AddForce_Y(yForce);
 	
 	
-	//deltaMicroseconds = std::chrono::steady_clock::now() - startTime;
-
 	system("pause");
 
-	//try the following, dont natty run.
 	myWorld.RunPhysics();
 
 	system("pause");

@@ -8,6 +8,7 @@ void Vector2::SetMagnitudeFromComponents()
 {
 	m_magnitude = std::sqrt(square(m_xComponent) + square(m_yComponent));
 }
+
 // Set direction using x and y
 void Vector2::SetDirectionFromComponents()
 {
